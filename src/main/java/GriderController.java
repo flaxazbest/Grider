@@ -33,11 +33,15 @@ public class GriderController {
     private double scale = 1.0;
     private double deltaCornerX = 0;
     private double deltaMoveX = 0;
+    private double oldX = 0;
     private double cornerY;
     private double deltaCornerY = 0;
     private double deltaMoveY = 0;
+    private double oldY = 0;
     private double sizeSquare;
     private boolean isDragged = false;
+
+    private Canvas layer = new Canvas();
 
     public void initialize() {
         canvas.setFocusTraversable(true);
@@ -49,12 +53,31 @@ public class GriderController {
         canvas.heightProperty().addListener(observable->redraw());
         gc = canvas.getGraphicsContext2D();
 
+
+        layer.getGraphicsContext2D().setFill(Color.GREY);
+        layer.getGraphicsContext2D().setLineWidth(2);
+        layer.getGraphicsContext2D().setStroke(Color.YELLOW);
+        pane.getChildren().add(layer);
+        layer.toFront();
     }
 
     private void redraw() {
         gc.setFill(Color.GREY);
         gc.fillRect(0,0, canvas.getWidth(), canvas.getHeight());
+
         drawGridForField(field);
+
+        drawSelection(1,1);
+    }
+
+    private void drawSelection(int col, int row) {
+        layer.setWidth(sizeSquare);
+        layer.setHeight(sizeSquare);
+        layer.getGraphicsContext2D().fillRect(0,0,sizeSquare,sizeSquare);
+        layer.setLayoutX(cornerX+deltaCornerX+deltaMoveX+sizeSquare*col);
+        layer.setLayoutY(cornerY+deltaCornerY+deltaMoveY+sizeSquare*row);
+        layer.getGraphicsContext2D().strokeRect(1,1,sizeSquare-2, sizeSquare-2);
+        layer.toFront();
     }
 
     private void drawGridForField(Field f) {
@@ -70,32 +93,23 @@ public class GriderController {
         for (int i=0; i<field.getSize()+3; i++) {
             gc.strokeLine(cornerX+deltaCornerX+deltaMoveX+i*sizeSquare, cornerY+deltaCornerY+deltaMoveY,
                           cornerX+deltaCornerX+deltaMoveX+i*sizeSquare, cornerY+deltaCornerY+deltaMoveY+sizeSquare*(field.getSize()+2));
-            gc.strokeLine(cornerX+deltaCornerX+deltaMoveX, cornerY+deltaCornerY+i*sizeSquare,
+            gc.strokeLine(cornerX+deltaCornerX+deltaMoveX, cornerY+deltaCornerY+deltaMoveY+i*sizeSquare,
                           cornerX+deltaCornerX+deltaMoveX+sizeSquare*(field.getSize()+2), cornerY+deltaCornerY+deltaMoveY+i*sizeSquare);
         }
 
 
     }
 
-    private double oldX = 0;
-    private double oldY = 0;
-
     public void mouseCanvas(MouseEvent mouseEvent) {
-
-        if (mouseEvent.isControlDown()) {
-            deltaMoveX = (mouseEvent.getX() - oldX);
-            deltaMoveY = (mouseEvent.getX() - oldY);
-            redraw();
-            System.out.println("here " + oldX);
-        }
-
-        button1.setText(mouseEvent.getX() + " " + mouseEvent.getY());
         if (mouseEvent.getX() > cornerX+deltaCornerX && mouseEvent.getX() < cornerX+deltaCornerX+sizeSquare*(field.getSize()+2)
             && mouseEvent.getY() > cornerY+deltaCornerY && mouseEvent.getY() < cornerY+deltaCornerY+sizeSquare*(field.getSize()+2) ) {
-            button2.setText(String.valueOf((int) ((mouseEvent.getX() - cornerX-deltaCornerX) / sizeSquare ))
-                            + " " +
-                            String.valueOf((int) ((mouseEvent.getY() - cornerY-deltaCornerY) / sizeSquare ))
-            );
+
+            int x = (int) ((mouseEvent.getX() - cornerX-deltaCornerX) / sizeSquare );
+            int y = (int) ((mouseEvent.getY() - cornerY-deltaCornerY) / sizeSquare );
+
+            drawSelection(x, y);
+
+            button2.setText(x + " " + y);
         }
         else {
             button2.setText("Out of range");
@@ -104,9 +118,9 @@ public class GriderController {
 
     public void onScrollCanvas(ScrollEvent scrollEvent) {
         //button3.setText("scroll");
-
+        deltaMoveX = 0.0;
+        deltaMoveY = 0.0;
         if (scrollEvent.isControlDown()) {
-            //deltaCornerX += scrollEvent.getDeltaY();
             if (scrollEvent.getDeltaY() > 0)
                 scale *= multyplierScaling;
             else
@@ -119,11 +133,14 @@ public class GriderController {
 
     public void onCanvasPress(KeyEvent keyEvent) {
         if (keyEvent.isControlDown()) {
+            layer.toBack();
             canvas.setCursor(Cursor.MOVE);
             if (keyEvent.getCode()== KeyCode.NUMPAD0) {
                 scale = 1.0;
                 deltaCornerX = 0.0;
                 deltaCornerY = 0.0;
+                deltaMoveX = 0.0;
+                deltaMoveY = 0.0;
                 redraw();
             }
         }
@@ -134,16 +151,29 @@ public class GriderController {
     }
 
     public void onCanvasMousePress(MouseEvent mouseEvent) {
-        oldX = mouseEvent.getX();
-        oldY = mouseEvent.getY();
-        isDragged = true;
-        System.out.println("D true");
+        canvas.setCursor(Cursor.CLOSED_HAND);
+        oldX = mouseEvent.getSceneX();
+        oldY = mouseEvent.getSceneY();
+        deltaMoveX = ((Canvas)(mouseEvent.getSource())).getTranslateX();
+        deltaMoveY = ((Canvas)(mouseEvent.getSource())).getTranslateY();
     }
 
     public void onCanvasMouseRelease(MouseEvent mouseEvent) {
-        isDragged = false;
-        deltaMoveX = 0.0;
-        deltaMoveY = 0.0;
-        System.out.println("D false");
+        deltaCornerX += deltaMoveX;
+        deltaCornerY += deltaMoveY;
+        if (mouseEvent.isControlDown())
+            canvas.setCursor(Cursor.MOVE);
+        else
+            canvas.setCursor(Cursor.DEFAULT);
+    }
+
+    public void onDrag(MouseEvent mouseEvent) {
+        if (mouseEvent.isControlDown()) {
+            double offsetX = mouseEvent.getSceneX() - oldX;
+            double offsetY = mouseEvent.getSceneY() - oldY;
+            deltaMoveX = offsetX;
+            deltaMoveY = offsetY;
+            redraw();
+        }
     }
 }
