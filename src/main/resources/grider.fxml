@@ -20,6 +20,8 @@
             <Button fx:id="button1" mnemonicParsing="false" prefWidth="130.0" text="Button" />
             <Button fx:id="button2" mnemonicParsing="false" prefWidth="130.0" text="Button" />
             <Button fx:id="button3" mnemonicParsing="false" prefWidth="130.0" text="Button" />
+             <Canvas fx:id="card1" width="130" height="130" onMouseDragged="#cardDrag" onMousePressed="#cardPress" onMouseReleased="#cardRelease" translateZ="2"/>
+             <Canvas fx:id="card2" width="130" height="130" onMouseDragged="#cardDrag" onMousePressed="#cardPress" onMouseReleased="#cardRelease" translateZ="2"/>
          </children>
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

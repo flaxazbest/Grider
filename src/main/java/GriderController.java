@@ -3,6 +3,7 @@ import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -17,9 +18,12 @@ public class GriderController {
 
     @FXML
     Canvas canvas;
-
     @FXML
     Canvas layer;
+    @FXML
+    Canvas card1;
+    @FXML
+    Canvas card2;
 
     @FXML
     Button button1;
@@ -44,8 +48,6 @@ public class GriderController {
     private double sizeSquare;
     private boolean isDragged = false;
 
-    //private Canvas layer = new Canvas();
-
     public void initialize() {
         canvas.setFocusTraversable(true);
         field = new Field(1,1);
@@ -62,6 +64,10 @@ public class GriderController {
         layer.getGraphicsContext2D().setStroke(Color.YELLOW);
         //pane.getChildren().add(layer);
         layer.toFront();
+
+        Image im = new Image("Card2T.png");
+        card1.getGraphicsContext2D().drawImage(im, 0, 0, card1.getWidth(), card1.getHeight());
+        card2.getGraphicsContext2D().drawImage(im, 0, 0, card1.getWidth(), card1.getHeight());
     }
 
     private void redraw() {
@@ -82,7 +88,7 @@ public class GriderController {
             layer.setVisible(false);
         layer.setLayoutX(cornerX+deltaCornerX+sizeSquare*col);
         layer.setLayoutY(cornerY+deltaCornerY+sizeSquare*row);
-        layer.getGraphicsContext2D().strokeRect(1,1,sizeSquare-2, sizeSquare-2);
+        layer.getGraphicsContext2D().strokeRect(0,0,sizeSquare-2, sizeSquare-2);
         layer.toFront();
     }
 
@@ -93,7 +99,7 @@ public class GriderController {
         cornerX = (pane.getWidth() - sizeGrid)/2 + sizeSquare/2;
         cornerY = (pane.getHeight() - sizeGrid)/2 + sizeSquare/2;
 
-        /*
+        //*
         gc.setStroke(Color.GREEN);
         gc.setLineWidth(1);
 
@@ -103,7 +109,7 @@ public class GriderController {
             gc.strokeLine(cornerX+deltaCornerX+deltaMoveX, cornerY+deltaCornerY+deltaMoveY+i*sizeSquare,
                           cornerX+deltaCornerX+deltaMoveX+sizeSquare*(field.getSize()+2), cornerY+deltaCornerY+deltaMoveY+i*sizeSquare);
         }
-        */
+        //*/
     }
 
     public void mouseCanvas(MouseEvent mouseEvent) {
@@ -189,15 +195,34 @@ public class GriderController {
         }
     }
 
-    public void mouseMoveLayer(MouseEvent mouseEvent) {
-
-    }
-
     public void onCLayerMouseRelease(MouseEvent mouseEvent) {
         if (mouseEvent.isControlDown())
             canvas.setCursor(Cursor.MOVE);
         else
             canvas.setCursor(Cursor.DEFAULT);
         layer.setVisible(true);
+    }
+
+    private double oldCardX, oldCardY, traslateCardX, traslateCardY;
+
+    public void cardRelease(MouseEvent mouseEvent) {
+        ((Canvas)(mouseEvent.getSource())).setCursor(Cursor.DEFAULT);
+    }
+
+    public void cardPress(MouseEvent mouseEvent) {
+        ((Canvas)(mouseEvent.getSource())).setCursor(Cursor.CLOSED_HAND);
+        oldCardX = mouseEvent.getSceneX();
+        oldCardY = mouseEvent.getSceneY();
+        traslateCardX = ((Canvas)(mouseEvent.getSource())).getTranslateX();
+        traslateCardY = ((Canvas)(mouseEvent.getSource())).getTranslateY();
+    }
+
+    public void cardDrag(MouseEvent mouseEvent) {
+        double offsetX = mouseEvent.getSceneX() - oldCardX;
+        double offsetY = mouseEvent.getSceneY() - oldCardY;
+        double newTranslateX = traslateCardX + offsetX;
+        double newTranslateY = traslateCardY + offsetY;
+        ((Canvas)(mouseEvent.getSource())).setTranslateX(newTranslateX);
+        ((Canvas)(mouseEvent.getSource())).setTranslateY(newTranslateY);
     }
 }
