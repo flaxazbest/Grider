@@ -12,6 +12,7 @@
       <Pane fx:id="pane" layoutX="270.0" layoutY="94.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
          <children>
             <Canvas fx:id="canvas" height="200.0" width="200.0" onMouseMoved="#mouseCanvas" onMouseDragged="#onDrag" onMousePressed="#onCanvasMousePress" onMouseReleased="#onCanvasMouseRelease" onScroll="#onScrollCanvas" onKeyPressed="#onCanvasPress" onKeyReleased="#onCanvasReleased" />
+            <Canvas fx:id="layer" onMouseDragged="#onDrag" onMousePressed="#onCanvasMousePress" onMouseReleased="#onCLayerMouseRelease" onScroll="#onScrollCanvas" onKeyPressed="#onCanvasPress" onKeyReleased="#onCanvasReleased" />
          </children>
       </Pane>
       <VBox layoutX="5.0" layoutY="5.0" maxWidth="140.0" minHeight="140.0" prefHeight="200.0" prefWidth="140.0" spacing="5.0" translateZ="1.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">

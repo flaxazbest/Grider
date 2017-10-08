@@ -19,6 +19,9 @@ public class GriderController {
     Canvas canvas;
 
     @FXML
+    Canvas layer;
+
+    @FXML
     Button button1;
     @FXML
     Button button2;
@@ -41,7 +44,7 @@ public class GriderController {
     private double sizeSquare;
     private boolean isDragged = false;
 
-    private Canvas layer = new Canvas();
+    //private Canvas layer = new Canvas();
 
     public void initialize() {
         canvas.setFocusTraversable(true);
@@ -57,7 +60,7 @@ public class GriderController {
         layer.getGraphicsContext2D().setFill(Color.GREY);
         layer.getGraphicsContext2D().setLineWidth(2);
         layer.getGraphicsContext2D().setStroke(Color.YELLOW);
-        pane.getChildren().add(layer);
+        //pane.getChildren().add(layer);
         layer.toFront();
     }
 
@@ -74,8 +77,11 @@ public class GriderController {
         layer.setWidth(sizeSquare);
         layer.setHeight(sizeSquare);
         layer.getGraphicsContext2D().fillRect(0,0,sizeSquare,sizeSquare);
-        layer.setLayoutX(cornerX+deltaCornerX+deltaMoveX+sizeSquare*col);
-        layer.setLayoutY(cornerY+deltaCornerY+deltaMoveY+sizeSquare*row);
+        if (cornerX+deltaCornerX+sizeSquare*col < 0 || cornerX+deltaCornerX+sizeSquare*col > pane.getWidth()-sizeSquare
+         || cornerY+deltaCornerY+sizeSquare*row < 0 || cornerY+deltaCornerY+sizeSquare*row > pane.getHeight()-sizeSquare )
+            layer.setVisible(false);
+        layer.setLayoutX(cornerX+deltaCornerX+sizeSquare*col);
+        layer.setLayoutY(cornerY+deltaCornerY+sizeSquare*row);
         layer.getGraphicsContext2D().strokeRect(1,1,sizeSquare-2, sizeSquare-2);
         layer.toFront();
     }
@@ -87,6 +93,7 @@ public class GriderController {
         cornerX = (pane.getWidth() - sizeGrid)/2 + sizeSquare/2;
         cornerY = (pane.getHeight() - sizeGrid)/2 + sizeSquare/2;
 
+        /*
         gc.setStroke(Color.GREEN);
         gc.setLineWidth(1);
 
@@ -96,23 +103,26 @@ public class GriderController {
             gc.strokeLine(cornerX+deltaCornerX+deltaMoveX, cornerY+deltaCornerY+deltaMoveY+i*sizeSquare,
                           cornerX+deltaCornerX+deltaMoveX+sizeSquare*(field.getSize()+2), cornerY+deltaCornerY+deltaMoveY+i*sizeSquare);
         }
-
-
+        */
     }
 
     public void mouseCanvas(MouseEvent mouseEvent) {
-        if (mouseEvent.getX() > cornerX+deltaCornerX && mouseEvent.getX() < cornerX+deltaCornerX+sizeSquare*(field.getSize()+2)
-            && mouseEvent.getY() > cornerY+deltaCornerY && mouseEvent.getY() < cornerY+deltaCornerY+sizeSquare*(field.getSize()+2) ) {
+        if (!layer.isVisible())
+            layer.setVisible(true);
+        if (!mouseEvent.isControlDown()) {
+            if (mouseEvent.getX() > cornerX+deltaCornerX && mouseEvent.getX() < cornerX+deltaCornerX+sizeSquare*(field.getSize()+2)
+                && mouseEvent.getY() > cornerY+deltaCornerY && mouseEvent.getY() < cornerY+deltaCornerY+sizeSquare*(field.getSize()+2) ) {
 
-            int x = (int) ((mouseEvent.getX() - cornerX-deltaCornerX) / sizeSquare );
-            int y = (int) ((mouseEvent.getY() - cornerY-deltaCornerY) / sizeSquare );
+                int x = (int) ((mouseEvent.getX() - cornerX-deltaCornerX) / sizeSquare );
+                int y = (int) ((mouseEvent.getY() - cornerY-deltaCornerY) / sizeSquare );
 
-            drawSelection(x, y);
+                drawSelection(x, y);
 
-            button2.setText(x + " " + y);
-        }
-        else {
-            button2.setText("Out of range");
+                button2.setText(x + " " + y);
+            }
+            else {
+                button2.setText("Out of range");
+            }
         }
     }
 
@@ -156,6 +166,7 @@ public class GriderController {
         oldY = mouseEvent.getSceneY();
         deltaMoveX = ((Canvas)(mouseEvent.getSource())).getTranslateX();
         deltaMoveY = ((Canvas)(mouseEvent.getSource())).getTranslateY();
+        layer.setVisible(false);
     }
 
     public void onCanvasMouseRelease(MouseEvent mouseEvent) {
@@ -165,6 +176,7 @@ public class GriderController {
             canvas.setCursor(Cursor.MOVE);
         else
             canvas.setCursor(Cursor.DEFAULT);
+        //layer.setVisible(true);
     }
 
     public void onDrag(MouseEvent mouseEvent) {
@@ -175,5 +187,17 @@ public class GriderController {
             deltaMoveY = offsetY;
             redraw();
         }
+    }
+
+    public void mouseMoveLayer(MouseEvent mouseEvent) {
+
+    }
+
+    public void onCLayerMouseRelease(MouseEvent mouseEvent) {
+        if (mouseEvent.isControlDown())
+            canvas.setCursor(Cursor.MOVE);
+        else
+            canvas.setCursor(Cursor.DEFAULT);
+        layer.setVisible(true);
     }
 }
